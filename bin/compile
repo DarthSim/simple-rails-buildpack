@@ -1,0 +1,23 @@
+#!/bin/sh
+
+cache_dir=$2
+
+ruby_version=${RUBY_VERSION:-"2.3.4"}
+vendor_url=${RUBY_VENDOR_URL:-"https://s3-external-1.amazonaws.com/heroku-buildpack-ruby/cedar-14"}
+
+arch_filename="ruby-$version.tgz"
+arch_cache_path="$2/$arch_filename"
+
+bundle_path="$cache_dir/bundler"
+bundle_binstubs_path="$bundle_path/bin"
+
+if [ ! -e "$file" ]; then
+  wget "$vendor_url/cedar-14/$arch_filename" -O "$arch_cache_path"
+fi
+
+tar zxf "$arch_cache_path"
+
+mkdir -p bundle_binstubs_path
+bundle install --without development:test --path "$bundle_path" --binstubs "$bundle_binstubs_path" -j4 --deployment
+
+bundle exec rake assets:precompile
