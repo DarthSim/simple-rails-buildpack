@@ -1,9 +1,12 @@
 #!/bin/sh
 set -e
 
+mkdir -p "$1" "$2"
+
 build_dir=$1
 cache_dir=$2
 env_dir=$3
+buildpack_dir=$(cd "$(dirname $0)/.." && pwd)
 
 env_blacklist_regex='(PATH|GEM_PATH|GEM_HOME|GIT_DIR|SSH_KEY)'
 
@@ -17,8 +20,9 @@ arch_cache_path="$2/$arch_filename"
 
 ruby_path="$build_dir/vendor/ruby"
 
-bundle_path="$cache_dir/bundler"
-bundle_binstubs_path="$bundle_path/bin"
+bundler_path="$build_dir/vendor/bundler"
+bundler_bin_path="$bundler_path/bin"
+bundler_cache_path="$cache_dir/bundler"
 
 if [ -d "$env_dir" ]; then
   for e in $(ls $env_dir); do
@@ -28,6 +32,7 @@ if [ -d "$env_dir" ]; then
   done
 fi
 
+
 if [ ! -e "$arch_cache_path" ]; then
   echo "-----> Download ruby $ruby_version from $ruby_url..."
   wget "$ruby_url" -O "$arch_cache_path" --quiet
@@ -35,18 +40,39 @@ else
   echo "-----> Ruby $ruby_version was cached before."
 fi
 
+
 echo "-----> Unpacking ruby..."
+
 mkdir -p "$ruby_path"
 tar zxf "$arch_cache_path" -C "$ruby_path"
 
 export PATH="$ruby_path/bin:$PATH"
 unset GEM_PATH
 
-echo "-----> bundle install..."
+
+echo "-----> Installing dependencies using bundler..."
+
 cd "$build_dir"
+rm -rf "$bundler_path"
+
+if [ -d "$bundler_cache_path" ]; then
+  cp -r "$bundler_cache_path" "$bundler_path"
+fi
+
 gem install bundler --no-rdoc --no-ri
-mkdir -p $bundle_binstubs_path
-bundle install --without development:test --path "$bundle_path" --binstubs "$bundle_binstubs_path" -j4 --deployment
+mkdir -p "$bundler_bin_path"
+bundle install --without development:test --path "$bundler_path" --binstubs "$bundler_bin_path" -j4 --deployment
+
+rm -rf "$bundler_cache_path"
+cp -r "$bundler_path" "$bundler_cache_path"
+
+export PATH="$bundler_bin_path:$PATH"
 
 echo "-----> Assets compilation..."
+
 bundle exec rake assets:precompile
+
+mkdir -p "$build_dir/.profile.d"
+echo 'export PATH=$HOME/bin:$HOME/vendor/bundler/bin:$HOME/vendor/ruby/bin:$PATH' > "$build_dir/.profile.d/rails.sh"
+
+echo "export PATH=$PATH" > "$buildpack_dir/export"
