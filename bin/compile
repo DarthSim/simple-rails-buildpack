@@ -17,7 +17,7 @@ ruby_path="$build_dir/vendor/ruby"
 bundle_path="$cache_dir/bundler"
 bundle_binstubs_path="$bundle_path/bin"
 
-if [ ! -e "$file" ]; then
+if [ ! -e "$arch_cache_path" ]; then
   echo "Download ruby $ruby_version..."
   wget "$ruby_url" -O "$arch_cache_path"
 else
