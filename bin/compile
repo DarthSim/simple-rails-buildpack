@@ -8,7 +8,17 @@ cache_dir=$2
 env_dir=$3
 buildpack_dir=$(cd "$(dirname $0)/.." && pwd)
 
+
 env_blacklist_regex='(PATH|GEM_PATH|GEM_HOME|GIT_DIR|SSH_KEY)'
+
+if [ -d "$env_dir" ]; then
+  for e in $(ls $env_dir); do
+    echo "$e" | grep -qvE "$env_blacklist_regex" &&
+    export "$e=$(cat $env_dir/$e)"
+    :
+  done
+fi
+
 
 ruby_version=${RUBY_VERSION:-"2.3.4"}
 vendor_url=${RUBY_VENDOR_URL:-"https://s3-external-1.amazonaws.com/heroku-buildpack-ruby/cedar-14"}
@@ -25,14 +35,6 @@ bundler_bin_path="$bundler_path/bin"
 bundler_cache_path="$cache_dir/bundle"
 bundler_config_path=".bundle/config"
 
-if [ -d "$env_dir" ]; then
-  for e in $(ls $env_dir); do
-    echo "$e" | grep -qvE "$env_blacklist_regex" &&
-    export "$e=$(cat $env_dir/$e)"
-    :
-  done
-fi
-
 
 title() {
   echo ""
@@ -46,7 +48,6 @@ if [ ! -e "$arch_cache_path" ]; then
 else
   title "Ruby $ruby_version was cached before."
 fi
-
 
 title "Unpacking ruby"
 
@@ -75,6 +76,7 @@ rm -rf "$bundler_cache_path"
 cp -r "$bundler_path" "$bundler_cache_path"
 
 export PATH="$build_dir/$bundler_bin_path:$PATH"
+
 
 title "Assets compilation"
 
