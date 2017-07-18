@@ -1,5 +1,7 @@
 #!/bin/sh
+set -e
 
+build_dir=$1
 cache_dir=$2
 
 ruby_version=${RUBY_VERSION:-"2.3.4"}
@@ -9,6 +11,8 @@ ruby_url="$vendor_url/ruby-$ruby_version.tgz"
 
 arch_filename="ruby-$ruby_version.tgz"
 arch_cache_path="$2/$arch_filename"
+
+ruby_path="$build_dir/vendor/ruby"
 
 bundle_path="$cache_dir/bundler"
 bundle_binstubs_path="$bundle_path/bin"
@@ -21,10 +25,14 @@ else
 fi
 
 echo "Unpacking ruby..."
-tar zxf "$arch_cache_path"
+mkdir -p "$ruby_path"
+tar zxf "$arch_cache_path" -C "$ruby_path"
+
+export PATH="$ruby_path/bin:$PATH"
+unset GEM_PATH
 
 echo "bundle install..."
-mkdir -p bundle_binstubs_path
+mkdir -p $bundle_binstubs_path
 bundle install --without development:test --path "$bundle_path" --binstubs "$bundle_binstubs_path" -j4 --deployment
 
 echo "Assets compilation..."
