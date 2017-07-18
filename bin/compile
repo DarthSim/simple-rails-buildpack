@@ -3,7 +3,7 @@ set -e
 
 build_dir=$1
 cache_dir=$2
-$env_dir=$3
+env_dir=$3
 
 env_blacklist_regex='(PATH|GEM_PATH|GEM_HOME|GIT_DIR|SSH_KEY)'
 
