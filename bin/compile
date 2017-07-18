@@ -41,14 +41,14 @@ title() {
 
 
 if [ ! -e "$arch_cache_path" ]; then
-  title("Download ruby $ruby_version from $ruby_url")
+  title "Download ruby $ruby_version from $ruby_url"
   wget "$ruby_url" -O "$arch_cache_path" --quiet
 else
-  title("Ruby $ruby_version was cached before.")
+  title "Ruby $ruby_version was cached before."
 fi
 
 
-title("Unpacking ruby")
+title "Unpacking ruby"
 
 mkdir -p "$ruby_path"
 tar zxf "$arch_cache_path" -C "$ruby_path"
@@ -57,7 +57,7 @@ export PATH="$ruby_path/bin:$PATH"
 unset GEM_PATH
 
 
-title("Installing dependencies using bundler")
+title "Installing dependencies using bundler"
 
 cd "$build_dir"
 rm -rf "$bundler_path"
@@ -78,7 +78,7 @@ cp -r "$bundler_path" "$bundler_cache_path"
 
 export PATH="$bundler_bin_path:$PATH"
 
-title("Assets compilation")
+title "Assets compilation"
 
 bundle exec rake assets:precompile
 
