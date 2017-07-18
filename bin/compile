@@ -3,6 +3,9 @@ set -e
 
 build_dir=$1
 cache_dir=$2
+$env_dir=$3
+
+env_blacklist_regex='(PATH|GEM_PATH|GEM_HOME|GIT_DIR|SSH_KEY)'
 
 ruby_version=${RUBY_VERSION:-"2.3.4"}
 vendor_url=${RUBY_VENDOR_URL:-"https://s3-external-1.amazonaws.com/heroku-buildpack-ruby/cedar-14"}
@@ -17,8 +20,16 @@ ruby_path="$build_dir/vendor/ruby"
 bundle_path="$cache_dir/bundler"
 bundle_binstubs_path="$bundle_path/bin"
 
+if [ -d "$env_dir" ]; then
+  for e in $(ls $env_dir); do
+    echo "$e" | grep -qvE "$env_blacklist_regex" &&
+    export "$e=$(cat $env_dir/$e)"
+    :
+  done
+fi
+
 if [ ! -e "$arch_cache_path" ]; then
-  echo "-----> Download ruby $ruby_version..."
+  echo "-----> Download ruby $ruby_version from $ruby_url..."
   wget "$ruby_url" -O "$arch_cache_path" --quiet
 else
   echo "-----> Ruby $ruby_version was cached before."
