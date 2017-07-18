@@ -18,22 +18,23 @@ bundle_path="$cache_dir/bundler"
 bundle_binstubs_path="$bundle_path/bin"
 
 if [ ! -e "$arch_cache_path" ]; then
-  echo "Download ruby $ruby_version..."
+  echo "-----> Download ruby $ruby_version..."
   wget "$ruby_url" -O "$arch_cache_path"
 else
-  echo "Ruby $ruby_version was cached before."
+  echo "-----> Ruby $ruby_version was cached before."
 fi
 
-echo "Unpacking ruby..."
+echo "-----> Unpacking ruby..."
 mkdir -p "$ruby_path"
 tar zxf "$arch_cache_path" -C "$ruby_path"
 
 export PATH="$ruby_path/bin:$PATH"
 unset GEM_PATH
 
-echo "bundle install..."
+echo "-----> bundle install..."
+gem install bundler
 mkdir -p $bundle_binstubs_path
 bundle install --without development:test --path "$bundle_path" --binstubs "$bundle_binstubs_path" -j4 --deployment
 
-echo "Assets compilation..."
+echo "-----> Assets compilation..."
 bundle exec rake assets:precompile
