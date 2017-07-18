@@ -19,7 +19,7 @@ bundle_binstubs_path="$bundle_path/bin"
 
 if [ ! -e "$arch_cache_path" ]; then
   echo "-----> Download ruby $ruby_version..."
-  wget "$ruby_url" -O "$arch_cache_path"
+  wget "$ruby_url" -O "$arch_cache_path" --quiet
 else
   echo "-----> Ruby $ruby_version was cached before."
 fi
@@ -32,7 +32,8 @@ export PATH="$ruby_path/bin:$PATH"
 unset GEM_PATH
 
 echo "-----> bundle install..."
-gem install bundler
+cd "$build_dir"
+gem install bundler --no-rdoc --no-ri
 mkdir -p $bundle_binstubs_path
 bundle install --without development:test --path "$bundle_path" --binstubs "$bundle_binstubs_path" -j4 --deployment
 
