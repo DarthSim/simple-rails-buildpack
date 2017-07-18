@@ -20,10 +20,10 @@ arch_cache_path="$2/$arch_filename"
 
 ruby_path="$build_dir/vendor/ruby"
 
-bundler_path="$build_dir/vendor/bundle"
+bundler_path="vendor/bundle"
 bundler_bin_path="$bundler_path/bin"
 bundler_cache_path="$cache_dir/bundle"
-bundler_config_path="$build_dir/.bundle/config"
+bundler_config_path=".bundle/config"
 
 if [ -d "$env_dir" ]; then
   for e in $(ls $env_dir); do
@@ -76,13 +76,13 @@ cat $bundler_config_path
 rm -rf "$bundler_cache_path"
 cp -r "$bundler_path" "$bundler_cache_path"
 
-export PATH="$bundler_bin_path:$PATH"
+export PATH="$build_dir/$bundler_bin_path:$PATH"
 
 title "Assets compilation"
 
 bundle exec rake assets:precompile
 
 mkdir -p "$build_dir/.profile.d"
-echo 'export PATH=$HOME/bin:$HOME/vendor/bundler/bin:$HOME/vendor/ruby/bin:$PATH' > "$build_dir/.profile.d/rails.sh"
+echo 'export PATH=$HOME/bin:$HOME/vendor/bundle/bin:$HOME/vendor/ruby/bin:$PATH' > "$build_dir/.profile.d/rails.sh"
 
 echo "export PATH=$PATH" > "$buildpack_dir/export"
