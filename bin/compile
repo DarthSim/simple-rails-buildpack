@@ -57,6 +57,10 @@ tar zxf "$arch_cache_path" -C "$ruby_path"
 export PATH="$ruby_path/bin:$PATH"
 unset GEM_PATH
 
+if [ -n "$UPDATE_RUBYGEMS" ]; then
+  title "Updating rubygems"
+  gem update --system
+fi
 
 title "Installing dependencies using bundler"
 
@@ -76,6 +80,11 @@ rm -rf "$bundler_cache_path"
 cp -r "$bundler_path" "$bundler_cache_path"
 
 export PATH="$build_dir/$bundler_bin_path:$PATH"
+
+
+if [ -n "$UPDATE_RUBYGEMS" ]; then
+  sed -i -e 's/\/tmp\/build/\/app/g' /tmp/build/vendor/ruby/bin/gem
+fi
 
 
 mkdir -p "$build_dir/.profile.d"
