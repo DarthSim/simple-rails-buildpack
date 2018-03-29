@@ -19,8 +19,11 @@ if [ -d "$env_dir" ]; then
   done
 fi
 
-
-ruby_version=${RUBY_VERSION:-"2.3.4"}
+if [ -f "$build_dir/.ruby-version" ]; then
+  app_ruby_version=`cat $build_dir/.ruby-version`
+fi
+app_ruby_version=${app_ruby_version:-"2.3.4"}
+ruby_version=${RUBY_VERSION:-$app_ruby_version}
 vendor_url=${RUBY_VENDOR_URL:-"https://s3-external-1.amazonaws.com/heroku-buildpack-ruby/cedar-14"}
 
 ruby_url="$vendor_url/ruby-$ruby_version.tgz"
@@ -71,7 +74,7 @@ if [ -d "$bundler_cache_path" ]; then
   cp -r "$bundler_cache_path" "$bundler_path"
 fi
 
-gem install bundler --no-rdoc --no-ri
+gem install bundler --no-rdoc --no-ri --force
 mkdir -p "$bundler_bin_path"
 bundle install --without development:test --path "$bundler_path" --binstubs "$bundler_bin_path" -j4 --deployment
 bundle clean > /dev/null
